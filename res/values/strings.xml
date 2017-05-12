@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+    <string name="app_name">耍成儿</string>
+    <string name="wx_sign_in_text">微信登录</string>
+    <string name="entry_game_text">进入游戏</string>
+</resources>
