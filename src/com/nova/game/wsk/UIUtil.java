@@ -56,7 +56,6 @@ public class UIUtil {
     
     public static WindowStyle getDefaultWindowStyle(boolean isTranslucent) {
         Drawable bg = file2Drawable("drawable/dialog_background.png", 25, 25, 25, 25);
-        bg.setTopHeight(80);
         WindowStyle windowStyle = new WindowStyle(AssetsManager.getInstance().mFont, Color.BLACK, bg);
         if (isTranslucent) {
         	windowStyle.stageBackground = getTranslucentDrawable();
@@ -66,7 +65,6 @@ public class UIUtil {
 	
     public static WindowStyle getDefaultWindowStyle(Drawable background) {
         WindowStyle windowStyle = new WindowStyle(AssetsManager.getInstance().mFont, Color.BLACK, background);
-        
         Pixmap pixmap = new Pixmap(Constant.DEFAULT_WIDTH, Constant.DEFAULT_HEIGHT, Pixmap.Format.RGBA8888);
         pixmap.setColor(new Color(0.0F, 0.0F,  0.0F, 0.5F));
         pixmap.fill();

@@ -38,6 +38,11 @@ public class BaseDialog extends Dialog{
 
     public BaseDialog(String title) {
         super(title, UIUtil.getDefaultWindowStyle());
+        if (title != null && !title.isEmpty()) {
+            padTop(TITLE_HEIGHT);
+        } else {
+            padTop(0);
+        }
         this.setBounds(0, 0, 1000, 400);
         this.setPosition((Constant.DEFAULT_WIDTH - getWidth()) / 2, (Constant.DEFAULT_HEIGHT - getHeight()) / 2);
         addListener(mDialogClickListener);
@@ -52,6 +57,11 @@ public class BaseDialog extends Dialog{
 	
     public BaseDialog(String title, boolean isTranslucent) {
     	super(title, UIUtil.getDefaultWindowStyle(isTranslucent));
+        if (title != null && !title.isEmpty()) {
+            padTop(TITLE_HEIGHT);
+        } else {
+            padTop(0);
+        }
     	this.setBounds(0, 0, 1000, 400);
         this.setPosition((Constant.DEFAULT_WIDTH - getWidth()) / 2, (Constant.DEFAULT_HEIGHT - getHeight()) / 2);
         ImageButton closeButton = new ImageButton(new SpriteDrawable(new Sprite(new Texture(Gdx.files.internal("drawable/icon_close.png")))));
@@ -66,15 +76,6 @@ public class BaseDialog extends Dialog{
         addActor(closeButton);
         addListener(mDialogClickListener);
     }
-//    @Override
-//    public void setTitle(String title) {
-//        super.setTitle(title);
-//        if (title != null && !title.isEmpty()) {
-//            padTop(TITLE_HEIGHT);
-//        } else {
-//            padTop(0);
-//        }
-//    }
 	
 	public void setCanceledOnTouchOutside(boolean cancel) {
     	mCanceledOnTouchOutside = true;
