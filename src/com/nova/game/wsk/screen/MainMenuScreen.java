@@ -1,15 +1,22 @@
 package com.nova.game.wsk.screen;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeBitmapFontData;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -20,6 +27,7 @@ import com.nova.game.dialog.PromptDialog;
 import com.nova.game.wsk.BaseScreen;
 import com.nova.game.wsk.BaseStage;
 import com.nova.game.wsk.Constant;
+import com.nova.game.wsk.WXInfo;
 import com.nova.game.wsk.handler.GameRequestDispatcher;
 import com.nova.game.wsk.model.RoomInfoController;
 
@@ -38,6 +46,9 @@ public class MainMenuScreen extends BaseScreen {
 	private PromptDialog mPromptDialog;
 	private Label mLabel;
 	
+	private WXInfo mWxInfo;
+	private BitmapFont mFont;
+	
 	private boolean mIsUpdateScreen = false;
 
 	public MainMenuScreen(MainGame game) {
@@ -49,6 +60,9 @@ public class MainMenuScreen extends BaseScreen {
 	public void dispose() {
 		mBatch.dispose();
 		mStage.dispose();
+		if (mFont != null) {
+		    mFont.dispose();
+		}
 	}
 
 	@Override
@@ -67,6 +81,7 @@ public class MainMenuScreen extends BaseScreen {
 		mBatch.draw(new Texture(Gdx.files.internal("drawable/wsk.png")), 805, Constant.DEFAULT_HEIGHT - 400);
 		mBatch.end();
 		
+		mStage.act(delta);
 		mStage.draw();
 	}
 
@@ -136,6 +151,15 @@ public class MainMenuScreen extends BaseScreen {
 		mStage.addActor(mAddRoomButton);
 		mStage.addActor(mTestGameButton);
 		mStage.addActor(mJoinGameButton);
+		
+		mWxInfo = WXInfo.getInstance();
+		Image head = new Image(byte2Texture(mWxInfo.getHead()));
+		mFont = AssetsManager.getInstance().mFontGenerator.generateFont(36, mWxInfo.getNickName(), false);
+		LabelStyle labelStyle = new LabelStyle(mFont, Color.BLACK);
+		Label name = new Label( mWxInfo.getNickName(), labelStyle);
+		name.setPosition(150, 80);
+		mStage.addActor(head);
+		mStage.addActor(name);
 	}
 	
 	private ImageButton createButton(Texture texture) {
@@ -147,8 +171,9 @@ public class MainMenuScreen extends BaseScreen {
 	public void doBackKeyAction() {
 	    if (mPromptDialog != null && mPromptDialog.isVisible()) {
 	        mPromptDialog.setVisible(false);
-	    } else if (mJoinRoomDialog != null && mJoinRoomDialog.isVisible()) {
-	        mJoinRoomDialog.setVisible(false);
+	    } else if (mJoinRoomDialog != null && mJoinRoomDialog.hasParent()) {
+//	        mJoinRoomDialog.setVisible(false);
+	        mJoinRoomDialog.hide();
 	    } else {
 	        super.doBackKeyAction();
 	    }
@@ -186,8 +211,7 @@ public class MainMenuScreen extends BaseScreen {
     			requestJoinRoom(input);
     		}
     	});
-    	mStage.addActor(mJoinRoomDialog);
-    	mJoinRoomDialog.setVisible(true);
+    	mJoinRoomDialog.show(mStage);
     }
     
     private void showPromptDialog(int errorCode) {
@@ -226,5 +250,18 @@ public class MainMenuScreen extends BaseScreen {
         GameRequestDispatcher request = new GameRequestDispatcher();
 		request.joinRoom(room);
 		mIsUpdateScreen = true;
+    }
+    
+    public Texture byte2Texture(final byte[] bytes) {
+        Pixmap pixmap = new Pixmap(bytes, 0, bytes.length);
+        // int width = pixmap.getWidth();
+        // int height = pixmap.getHeight();
+        // int preferWidth = MathUtils.nextPowerOfTwo(width);
+        // int preferHeight = MathUtils.nextPowerOfTwo(height);
+        Texture texture = new Texture(pixmap);
+        // texture.draw(pixmap, 0, 0);
+        pixmap.dispose();
+
+        return texture;
     }
 }

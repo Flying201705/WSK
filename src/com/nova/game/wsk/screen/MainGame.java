@@ -11,7 +11,7 @@ public class MainGame extends BaseGame {
     @Override
     public void create() {
         AssetsManager.getInstance().loadAssets();
-        setScreen(new LoginScreen(this));
+        setScreen(new MainMenuScreen(this));
     }
     
     public void setMyInfo(PlayerInfo info) {

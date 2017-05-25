@@ -31,7 +31,9 @@ public class JoinRoomDialog extends BaseDialog {
     	public void clicked(InputEvent event, float x, float y) {
     		mInput = "";
             mTextField.setText(mInput);
-            setVisible(false);
+            if (hasParent()) {
+                hide();
+            }
     	};
     };
     
@@ -145,4 +147,13 @@ public class JoinRoomDialog extends BaseDialog {
     	mOkBtn.addListener(listener);
     }
     
+    @Override
+    public float getPrefWidth() {
+        return 1080;
+    }
+    
+    @Override
+    public float getPrefHeight() {
+        return 720;
+    }
 }

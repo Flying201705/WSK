@@ -59,6 +59,7 @@ public class AssetsManager {
 	public Sound mWinSound;
 	public Sound mLoseSound;
 	
+	public FreeTypeFontGenerator mFontGenerator;
 	public BitmapFont mFont;
 	
 	private AssetsManager() {
@@ -151,8 +152,8 @@ public class AssetsManager {
 	}
 	
 	private void loadFont() {
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/font.ttf"));
-		mFont = generator.generateFont(35, generator.DEFAULT_CHARS + 
+	    mFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font/font.ttf"));
+		mFont = mFontGenerator.generateFont(35, FreeTypeFontGenerator.DEFAULT_CHARS + 
 				"聊级进士总局数胜率性别男女测试一下哈满的幸福风口飞猪三叉巨魔战将奔跑蜗牛倔强电脑房间确定为空加入退出取消您要游戏吗语音发送快点吧我等花儿都谢了大家好很高兴见到又断线网络怎么这差和你合作真是太愉们交个朋友能不告诉联系方式呀还吵有什专心玩走决天亮各意思离开会再想念息长按说话松结束击输", false);
 //		mFont = new BitmapFont(fondData, fondData.getTextureRegion(), false);
 	}

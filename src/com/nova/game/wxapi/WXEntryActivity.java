@@ -1,14 +1,22 @@
 package com.nova.game.wxapi;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import com.nova.game.MainActivity;
 import com.nova.game.R;
+import com.nova.game.wsk.WXInfo;
+import com.tencent.mm.sdk.constants.ConstantsAPI;
 import com.tencent.mm.sdk.modelbase.BaseReq;
 import com.tencent.mm.sdk.modelbase.BaseResp;
 import com.tencent.mm.sdk.modelmsg.SendAuth;
@@ -23,26 +31,32 @@ import com.tencent.mm.sdk.openapi.WXAPIFactory;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
 
 public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
-
-    private final static String APP_ID = "wx1234567890";
-    private final static String APP_SECRET = "????";
+    private static final String TAG = "WXEntryActivity";
+    
+    private static final String APP_ID = "wx545d7fe9d45d8912";
+    private static final String APP_SECRET = "3600b2c8aee4cb5db7ace53653fc93c7";
     
     private IWXAPI mWXapi;
+    private WXInfo mWxInfo;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-        Log.i("liuhao", "WXEntryActivity onCreate");
+        Log.i(TAG, "onCreate");
         
-        mWXapi = WXAPIFactory.createWXAPI(this, APP_ID);
+        mWXapi = WXAPIFactory.createWXAPI(this, APP_ID, true);
+        mWXapi.handleIntent(getIntent(), this);
+        mWXapi.registerApp(APP_ID);
+        
+        mWxInfo = WXInfo.getInstance();
         
         Button sign_in = (Button) findViewById(R.id.wx_sign_in);
         sign_in.setOnClickListener(new OnClickListener() {
@@ -68,13 +82,25 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
     
     @Override
     public void onReq(BaseReq req) {
-        
+        Log.i(TAG, "public void onReq(BaseReq req) !!!!!!!");
+        switch (req.getType()) {
+        case ConstantsAPI.COMMAND_GETMESSAGE_FROM_WX:
+            Log.i(TAG, "onReq:COMMAND_GETMESSAGE_FROM_WX");
+            break;
+        case ConstantsAPI.COMMAND_SHOWMESSAGE_FROM_WX:
+            Log.i(TAG, "onReq:COMMAND_SHOWMESSAGE_FROM_WX");
+            break;
+        default:
+            break;
+        }
+
+        Log.i(TAG, "onReq:" + req.getType());
     }
 
     @Override
     public void onResp(BaseResp resp) {
         
-        Toast.makeText(this, "baseresp.getType = " + resp.getType(), Toast.LENGTH_LONG).show();
+        Log.i(TAG, "onResp: =" + resp.getType());
         
         switch (resp.errCode) {
         case BaseResp.ErrCode.ERR_OK:
@@ -109,12 +135,52 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                     if (response.getStatusLine().getStatusCode() == 200) {
                         HttpEntity entity = response.getEntity();
                         String entityStr = EntityUtils.toString(entity);
-                        if (entityStr != null) {
-                            entryGame();
+                        JSONObject object = new JSONObject(entityStr);
+                        String access_token = object.getString("access_token");
+                        String refresh_token = object.getString("refresh_token");
+                        String openid = object.getString("openid");
+                        
+                        Log.i(TAG, "requestTokenWithHttpClient - mAccessToken:" + access_token + "; mRefreshToken:" + refresh_token + "; mOpenId:" + openid);
+                        
+                        if (!TextUtils.isEmpty(access_token) && !TextUtils.isEmpty(openid)) {
+                            uri = String.format("https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s", access_token, openid);
+                            HttpGet httpGet_2 = new HttpGet(uri);
+                            HttpResponse response_2 = httpClient.execute(httpGet_2);
+                            if (response_2.getStatusLine().getStatusCode() == 200) {
+                                HttpEntity entity_2 = response_2.getEntity();
+                                String entityStr_2 = EntityUtils.toString(entity_2, HTTP.UTF_8);
+                                Log.i(TAG, "requestTokenWithHttpClient - entityStr_2:" + entityStr_2);
+                                JSONObject object_2 = new JSONObject(entityStr_2);
+                                mWxInfo.setNickName(object_2.getString("nickname"));
+                                mWxInfo.setSex(object_2.getInt("sex"));
+                                mWxInfo.setProvince(object_2.getString("province"));
+                                mWxInfo.setCity(object_2.getString("city"));
+                                mWxInfo.setCountry(object_2.getString("country"));
+                                mWxInfo.setPrivilege(object_2.getString("privilege"));
+                                mWxInfo.setUnionid(object_2.getString("unionid"));
+                                String headimgurl = object_2.getString("headimgurl");
+                                mWxInfo.setHeadimgurl(headimgurl);
+                                
+                                if (headimgurl.contains("/0")) {
+                                    headimgurl = headimgurl.replace("/0", "/132");
+                                }
+                                
+                                URL url = new URL(headimgurl);
+                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                conn.setConnectTimeout(5000);
+                                conn.setRequestMethod("GET");
+                                if (conn.getResponseCode() == 200) {
+                                    InputStream inputStream = conn.getInputStream();
+                                    mWxInfo.setHead(inputStream);
+                                }
+                                
+                                entryGame();
+                            }
                         }
+
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
                 }
             }
         }).start();

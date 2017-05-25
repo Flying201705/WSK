@@ -1,7 +1,9 @@
 package com.nova.game.wsk;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -101,4 +103,16 @@ public class BaseDialog extends Dialog{
     	mButton.setBounds((getWidth() - 350) / 2, 25, 350, 100);
     	addActor(mButton);
     }
+    
+//    @Override
+//    public void draw(Batch batch, float parentAlpha) {
+//        // TODO Auto-generated method stub
+//        Color color = batch.getColor();  
+//        batch.setColor(this.getColor());
+//        batch.getColor().a *= parentAlpha;
+//
+//        super.draw(batch, parentAlpha);
+//        
+//        batch.setColor(color);    
+//    }
 }
